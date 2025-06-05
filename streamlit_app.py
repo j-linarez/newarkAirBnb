@@ -36,9 +36,8 @@ filtered = df[
 # ====================
 # Layout: Three Columns
 # ====================
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
-# === Visual 1: Median Price by Property Type ===
 with col1:
     price_medians = filtered.groupby('property_type', as_index=False)['price'].median()
     chart1 = alt.Chart(price_medians).mark_bar().encode(
@@ -47,40 +46,40 @@ with col1:
         color=alt.Color('price:Q', scale=alt.Scale(scheme="greens")),
         tooltip=['property_type:N', alt.Tooltip('price:Q', format="$,.2f")]
     ).properties(
-        width=350,
+        width=500,
         height=400,
         title='Median Booking Price by Property Type'
     )
     st.altair_chart(chart1, use_container_width=True)
 
-# === Visual 2: Reviews Per Month Boxplot ===
 with col2:
     boxplot = alt.Chart(filtered).mark_boxplot(extent='min-max').encode(
         x=alt.X('reviews_per_month:Q', title='Reviews Per Month'),
         y=alt.Y('property_type:N', sort='-x'),
         tooltip=['property_type:N', 'reviews_per_month:Q']
     ).properties(
-        width=350,
+        width=500,
         height=400,
         title='Reviews Per Month by Property Type'
     )
     st.altair_chart(boxplot, use_container_width=True)
 
-# === Visual 3: Host Locations (Excluding Newark & Common US Locations) ===
-with col3:
-    excluded = ["Newark, NJ", "New Jersey, United States", "United States", "New York, United States", "Unknown"]
-    df_hosts = filtered[~filtered['host_location'].isin(excluded)]
-    top_hosts = df_hosts['host_location'].value_counts().nlargest(10).reset_index()
-    top_hosts.columns = ['host_location', 'count']
-    
-    chart3 = alt.Chart(top_hosts).mark_bar().encode(
-        x=alt.X('count:Q', title='Number of Listings'),
-        y=alt.Y('host_location:N', sort='-x'),
-        color=alt.Color('count:Q', scale=alt.Scale(scheme="reds")),
-        tooltip=['host_location:N', 'count:Q']
-    ).properties(
-        width=350,
-        height=400,
-        title='Top 10 Host Locations (Excl. Newark)'
-    )
-    st.altair_chart(chart3, use_container_width=True)
+# === Bottom Full-Width Chart ===
+st.markdown("---")  # Optional: a horizontal separator
+
+excluded = ["Newark, NJ", "New Jersey, United States", "United States", "New York, United States", "Unknown"]
+df_hosts = filtered[~filtered['host_location'].isin(excluded)]
+top_hosts = df_hosts['host_location'].value_counts().nlargest(10).reset_index()
+top_hosts.columns = ['host_location', 'count']
+
+chart3 = alt.Chart(top_hosts).mark_bar().encode(
+    x=alt.X('count:Q', title='Number of Listings'),
+    y=alt.Y('host_location:N', sort='-x'),
+    color=alt.Color('count:Q', scale=alt.Scale(scheme="reds")),
+    tooltip=['host_location:N', 'count:Q']
+).properties(
+    width=1000,
+    height=400,
+    title='Top 10 Host Locations (Excl. Newark)'
+)
+st.altair_chart(chart3, use_container_width=True)
