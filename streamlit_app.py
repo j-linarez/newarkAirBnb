@@ -4,7 +4,7 @@ import pandas as pd
 import altair as alt
 
 st.set_page_config(layout="wide", page_title="Newark Airbnb Dashboard")
-
+st.title("**Investigating Newark's AirBnb Listings**")
 # Load and prepare the data
 @st.cache_data
 def load_data():
@@ -18,10 +18,10 @@ def load_data():
 df = load_data()
 
 # Sidebar filters
-st.sidebar.header("Filter Listings")
-min_price, max_price = st.sidebar.slider("Price Range ($)", 0, int(df["price"].max()), (50, 300))
+st.sidebar.header("Filter by...")
+min_price, max_price = st.sidebar.slider("**Price in $**", 0, int(df["price"].max()), (50, 300))
 selected_types = st.sidebar.multiselect(
-    "Select Property Types", 
+    "**Property Types**", 
     options=df['property_type'].value_counts().index.tolist(), 
     default=df['property_type'].value_counts().nlargest(6).index.tolist()
 )
@@ -33,11 +33,14 @@ filtered = df[
     (df['property_type'].isin(selected_types))
 ]
 
-# ====================
-# Layout: Three Columns
-# ====================
+
+# I don't like getting the setup of this. This is bascially css
+# all over AGAIN AHHHHH
+
+# ok for personal reference, KEEP THESE AS LIMIT OF COLUMNS
 col1, col2 = st.columns(2)
 
+# Visulize the median booking price of top 6 bookigns initially
 with col1:
     price_medians = filtered.groupby('property_type', as_index=False)['price'].median()
     chart1 = alt.Chart(price_medians).mark_bar().encode(
@@ -52,8 +55,9 @@ with col1:
     )
     st.altair_chart(chart1, use_container_width=True)
 
+# Visulize the whiskerplots of reviews the property types typically get
 with col2:
-    boxplot = alt.Chart(filtered).mark_boxplot(extent='min-max').encode(
+    boxplot = alt.Chart(filtered).mark_boxplot(extent='min-max', color = "navy").encode(
         x=alt.X('reviews_per_month:Q', title='Reviews Per Month'),
         y=alt.Y('property_type:N', sort='-x'),
         tooltip=['property_type:N', 'reviews_per_month:Q']
@@ -64,9 +68,8 @@ with col2:
     )
     st.altair_chart(boxplot, use_container_width=True)
 
-# === Bottom Full-Width Chart ===
-st.markdown("---")  # Optional: a horizontal separator
-
+st.markdown("---")  
+# most popular related AHHH host locations!
 excluded = ["Newark, NJ", "New Jersey, United States", "United States", "New York, United States", "Unknown"]
 df_hosts = filtered[~filtered['host_location'].isin(excluded)]
 top_hosts = df_hosts['host_location'].value_counts().nlargest(10).reset_index()
@@ -80,6 +83,6 @@ chart3 = alt.Chart(top_hosts).mark_bar().encode(
 ).properties(
     width=1000,
     height=400,
-    title='Top 10 Host Locations (Excl. Newark)'
+    title='Top 10 Host Locations Outside Newark'
 )
 st.altair_chart(chart3, use_container_width=True)
