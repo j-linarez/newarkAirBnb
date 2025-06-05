@@ -5,6 +5,7 @@ import altair as alt
 
 st.set_page_config(layout="wide", page_title="Newark Airbnb Dashboard")
 st.title("**Investigating Newark's AirBnb Listings**")
+#
 # Load and prepare the data
 @st.cache_data
 def load_data():
